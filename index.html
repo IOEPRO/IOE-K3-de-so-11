@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BỘ ĐỀ ÔN IOE K3 SỐ: 11 (200 CÂU)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; margin: 0; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+      .animate-fade-in { animation: fadeIn 0.15s ease-out forwards; }
+      @keyframes slideUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .animate-slide-up { animation: slideUp 0.2s ease-out forwards; }
+      @keyframes bounceShort { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+      .animate-bounce-short { animation: bounceShort 1s infinite; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      const QuestionType = { MC: 'MC', FIB: 'FIB', RE: 'RE' };
+      const GameState = { START: 'START', PLAYING: 'PLAYING', FINISHED: 'FINISHED' };
+
+      const QUIZ_DATA = [
+        { id: 1, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/Thi_cac_cap/2020-2021/Lop3/Captruong/Audio/3-tn-59.mp3", questionText: "What colour is ______?", options: ["they", "that", "it", "These"], correctAnswer: "it", explanation: "Dịch: Nó màu gì? Dùng 'it' cho vật số ít." },
+        { id: 2, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["My", "is", "blue.", "colour", "favourite"], correctAnswer: "My favourite colour is blue.", explanation: "Dịch: Màu yêu thích của tôi là màu xanh dương." },
+        { id: 3, type: QuestionType.FIB, questionText: "Ảnh: _ _ _ _", correctAnswer: "fish", explanation: "Dịch: Con cá." },
+        { id: 4, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["fish", "the bottle.", "is", "The", "in"], correctAnswer: "The fish is in the bottle.", explanation: "Dịch: Con cá ở trong chai." },
+        { id: 5, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206388628712277_Audio.mp3", questionText: "... your books, please.", options: ["open", "listen", "close", "Go"], correctAnswer: "open", explanation: "Dịch: Hãy mở sách ra." },
+        { id: 6, type: QuestionType.FIB, questionText: "W_ _ t is that? – It’s a robot.", correctAnswer: "ha", explanation: "Dịch: Cái kia là cái gì? - Đó là một con rô bốt." },
+        { id: 7, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["from", "Where", "you", "are", ", Tommy?"], correctAnswer: "Where are you from, Tommy?", explanation: "Dịch: Bạn đến từ đâu, Tommy?" },
+        { id: 8, type: QuestionType.FIB, questionText: "th_ nks", correctAnswer: "thanks", explanation: "Dịch: Cảm ơn." },
+        { id: 9, type: QuestionType.FIB, questionText: "How are y_ _ ?", correctAnswer: "ou", explanation: "Dịch: Bạn khỏe không?" },
+        { id: 10, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2018/11/30/636791928416484779_Audio.mp3", questionText: "It’s beau_ _ _ _ _ .", correctAnswer: "beautiful", explanation: "Dịch: Nó thật đẹp." },
+        { id: 11, type: QuestionType.MC, questionText: "... your name?", options: ["Who", "How", "What’s", "Why"], correctAnswer: "What’s", explanation: "Dịch: Tên bạn là gì?" },
+        { id: 12, type: QuestionType.MC, questionText: "Choose the odd one out:", options: ["May", "July", "April", "Jimmy"], correctAnswer: "Jimmy", explanation: "Dịch: Jimmy là tên người, các từ khác là tháng." },
+        { id: 13, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["this.", "a rubber.", "Look", "It’s", "at"], correctAnswer: "Look at this. It’s a rubber.", explanation: "Dịch: Nhìn cái này này. Nó là một cục tẩy." },
+        { id: 14, type: QuestionType.FIB, questionText: "Be q_ _ et, please.", correctAnswer: "ui", explanation: "Dịch: Hãy giữ im lặng." },
+        { id: 15, type: QuestionType.FIB, questionText: "Cl_ _ n your teeth, please.", correctAnswer: "ean", explanation: "Dịch: Hãy đánh răng." },
+        { id: 16, type: QuestionType.MC, questionText: "Who is he?", options: ["She is Mary", "He my friend", "She my friend", "He’s Tom"], correctAnswer: "He’s Tom", explanation: "Dịch: Anh ấy là ai? - Anh ấy là Tom." },
+        { id: 17, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["are", "on the table?", "the books", "What colour"], correctAnswer: "What colour are the books on the table?", explanation: "Dịch: Những cuốn sách trên bàn màu gì?" },
+        { id: 18, type: QuestionType.MC, questionText: "Choose the odd one out:", options: ["white", "new", "yellow", "green"], correctAnswer: "new", explanation: "Dịch: New là tính từ tính chất, các từ khác là màu sắc." },
+        { id: 19, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2018/11/30/636791915125268802_Audio.mp3", questionText: "Do you _ _ _ _ at break time?", correctAnswer: "skip", explanation: "Dịch: Bạn có nhảy dây vào giờ giải lao không?" },
+        { id: 20, type: QuestionType.FIB, questionText: "I’m fine. How ab_ _ t you?", correctAnswer: "ou", explanation: "Dịch: Tôi khỏe, còn bạn thì sao?" },
+        { id: 21, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["They", "yellow.", "are"], correctAnswer: "They are yellow.", explanation: "Dịch: Chúng màu vàng." },
+        { id: 22, type: QuestionType.MC, questionText: "Choose the odd one out:", options: ["mother", "father", "brother", "teacher"], correctAnswer: "teacher", explanation: "Dịch: Teacher là nghề nghiệp, các từ khác là thành viên gia đình." },
+        { id: 23, type: QuestionType.MC, questionText: "I’d like some strawberries. – Here … are.", options: ["they", "them", "those", "these"], correctAnswer: "they", explanation: "Dịch: Tôi muốn vài quả dâu. - Chúng đây." },
+        { id: 24, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["new", "The school library", "nice.", "is", "and"], correctAnswer: "The school library is new and nice.", explanation: "Dịch: Thư viện trường mới và đẹp." },
+        { id: 25, type: QuestionType.MC, questionText: "... you like some bread? – No, I don't.", options: ["Does", "Do", "Are", "Is"], correctAnswer: "Do", explanation: "Dịch: Bạn có muốn ăn bánh mì không?" },
+        { id: 26, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["Good", "morning,", "teacher!"], correctAnswer: "Good morning, teacher!", explanation: "Dịch: Chào buổi sáng cô giáo!" },
+        { id: 27, type: QuestionType.FIB, questionText: "Nice _ _ meet you, Alan.", correctAnswer: "to", explanation: "Dịch: Rất vui được gặp bạn, Alan." },
+        { id: 28, type: QuestionType.FIB, questionText: "Wa_ _ your hands, please.", correctAnswer: "sh", explanation: "Dịch: Hãy rửa tay." },
+        { id: 29, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206313250471882_Audio.mp3", questionText: "I’ve got two ... .", options: ["hats", "apples", "oranges", "Balls"], correctAnswer: "apples", explanation: "Dịch: Tôi có hai quả táo." },
+        { id: 30, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["my", "This", "school", "is", "library."], correctAnswer: "This is my school library.", explanation: "Dịch: Đây là thư viện trường tôi." },
+        { id: 31, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["She", "every", "afternoon.", "does", "puzzles"], correctAnswer: "She does puzzles every afternoon.", explanation: "Dịch: Cô ấy chơi xếp hình mỗi chiều." },
+        { id: 32, type: QuestionType.FIB, questionText: "Listen to the teac_ er.", correctAnswer: "teacher", explanation: "Dịch: Hãy nghe giáo viên." },
+        { id: 33, type: QuestionType.FIB, questionText: "L_ _ k at the board.", correctAnswer: "oo", explanation: "Dịch: Nhìn lên bảng." },
+        { id: 34, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["go", "to school.", "This is", "we", "the way"], correctAnswer: "This is the way we go to school.", explanation: "Dịch: Đây là con đường chúng tôi đi học." },
+        { id: 35, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["is", "That", "bicycle.", "a"], correctAnswer: "That is a bicycle.", explanation: "Dịch: Kia là một chiếc xe đạp." },
+        { id: 36, type: QuestionType.FIB, questionText: "Ảnh: We learn P.E in the _ _ _ . It is very large.", correctAnswer: "gym", explanation: "Dịch: Chúng tôi học thể dục ở nhà thi đấu." },
+        { id: 37, type: QuestionType.MC, questionText: "… make a mess in class.", options: ["Are", "Is", "Do", "Don't"], correctAnswer: "Don't", explanation: "Dịch: Đừng làm bừa bộn trong lớp." },
+        { id: 38, type: QuestionType.FIB, questionText: "This is Richard. _ _ is my new friend.", correctAnswer: "He", explanation: "Dịch: Đây là Richard. Anh ấy là bạn mới của tôi." },
+        { id: 39, type: QuestionType.MC, questionText: "Good morning teacher! - ... .", options: ["Goodbye", "See you later", "Good morning", "Fine, thanks"], correctAnswer: "Good morning", explanation: "Dịch: Chào buổi sáng giáo viên!" },
+        { id: 40, type: QuestionType.FIB, questionText: "What’s _ _ _ _ name? - My name is Peter.", correctAnswer: "your", explanation: "Dịch: Tên bạn là gì?" },
+        { id: 41, type: QuestionType.FIB, questionText: "Henry doesn’t work _ _ Saturday and Sunday.", correctAnswer: "on", explanation: "Dịch: Henry không làm việc vào thứ Bảy và Chủ Nhật." },
+        { id: 42, type: QuestionType.FIB, questionText: "This is _ book.", correctAnswer: "a", explanation: "Dịch: Đây là một cuốn sách." },
+        { id: 43, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["Hello.", "Mary.", "I", "am"], correctAnswer: "Hello. I am Mary.", explanation: "Dịch: Xin chào. Tôi là Mary." },
+        { id: 44, type: QuestionType.MC, questionText: "Ten, eleven, twelve, ..., fourteen, fifteen. The missing number is:", options: ["12", "13", "14", "15"], correctAnswer: "13", explanation: "Dịch: Số còn thiếu là 13 (thirteen)." },
+        { id: 45, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["like", "doesn’t", "tennis.", "Mike"], correctAnswer: "Mike doesn’t like tennis.", explanation: "Dịch: Mike không thích tennis." },
+        { id: 46, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["you", "tomorrow,", "See", "Peter."], correctAnswer: "See you tomorrow, Peter.", explanation: "Dịch: Hẹn gặp lại bạn ngày mai, Peter." },
+        { id: 47, type: QuestionType.FIB, questionText: "Her ruler is short, but my ruler is l_ _ _ .", correctAnswer: "ong", explanation: "Dịch: Thước của cô ấy ngắn, còn thước của tôi dài." },
+        { id: 48, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/Thi_cac_cap/2020-2021/Lop3/Captruong/Audio/2-tn-26.mp3", questionText: "______ are my notebooks.", options: ["They", "These", "Those", "That"], correctAnswer: "Those", explanation: "Dịch: Kia là những cuốn vở của tôi." },
+        { id: 49, type: QuestionType.FIB, questionText: "N_ _ e to meet you, Sam.", correctAnswer: "ic", explanation: "Dịch: Rất vui được gặp bạn, Sam." },
+        { id: 50, type: QuestionType.FIB, questionText: "Miss Lan is my new t_ _ _ her.", correctAnswer: "eac", explanation: "Dịch: Cô Lan là giáo viên mới của tôi." },
+        { id: 51, type: QuestionType.FIB, questionText: "Peter _ _ from America.", correctAnswer: "is", explanation: "Dịch: Peter đến từ Mỹ." },
+        { id: 52, type: QuestionType.FIB, questionText: "BOA_ D", correctAnswer: "R", explanation: "Dịch: Cái bảng." },
+        { id: 53, type: QuestionType.MC, questionText: "My ... is Tim. Nice to meet you.", options: ["name’s", "names", "name", "namese"], correctAnswer: "name", explanation: "Dịch: Tên tôi là Tim." },
+        { id: 54, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2018/1/4/636506591897527797_Audio.mp3", questionText: "The girl’s favourite toy is ….", options: ["kite", "teddy", "doll", "Robot"], correctAnswer: "teddy", explanation: "Dịch: Đồ chơi yêu thích của cô bé là gấu bông." },
+        { id: 55, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206303416526610_Audio.mp3", questionText: "What are these? - They are my _ _ _ _ _ _ _ .", correctAnswer: "pencils", explanation: "Dịch: Đây là cái gì? - Chúng là những chiếc bút chì của tôi." },
+        { id: 56, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["backpack", "My", "is", "green.", "new"], correctAnswer: "My new backpack is green.", explanation: "Dịch: Cái ba lô mới của tôi màu xanh lá cây." },
+        { id: 57, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["are", "Huong?", "How", "you,", "old"], correctAnswer: "How old are you, Huong?", explanation: "Dịch: Bạn bao nhiêu tuổi vậy Hương?" },
+        { id: 58, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["is long.", "Her", "pencil"], correctAnswer: "Her pencil is long.", explanation: "Dịch: Bút chì của cô ấy dài." },
+        { id: 59, type: QuestionType.FIB, questionText: "Ảnh: BAD_ INTON", correctAnswer: "M", explanation: "Dịch: Môn cầu lông." },
+        { id: 60, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["are", "in", "the gym.", "My friends"], correctAnswer: "My friends are in the gym.", explanation: "Dịch: Những người bạn của tôi đang ở trong phòng thể dục." },
+        { id: 61, type: QuestionType.MC, questionText: "Is this a pencil box? – ..., it is.", options: ["No", "Not", "Yes", "No’s"], correctAnswer: "Yes", explanation: "Dịch: Đây có phải hộp bút chì không? - Vâng, đúng vậy." },
+        { id: 62, type: QuestionType.FIB, questionText: "Write w_ _ t the teacher says.", correctAnswer: "what", explanation: "Dịch: Viết những gì giáo viên nói." },
+        { id: 63, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["the school garden.", "are", "in", "They"], correctAnswer: "They are in the school garden.", explanation: "Dịch: Họ đang ở trong vườn trường." },
+        { id: 64, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2016/11/30/636160982546969645_Audio.mp3", questionText: "This is a … .", options: ["dot", "dog", "door", "Down"], correctAnswer: "dog", explanation: "Dịch: Đây là một con chó." },
+        { id: 65, type: QuestionType.FIB, questionText: "Good ni_ _ _ , children.", correctAnswer: "night", explanation: "Dịch: Chúc các con ngủ ngon." },
+        { id: 66, type: QuestionType.MC, questionText: "... this a chair? – No, it isn’t.", options: ["What", "How", "Is", "Are"], correctAnswer: "Is", explanation: "Dịch: Đây có phải là cái ghế không?" },
+        { id: 67, type: QuestionType.MC, questionText: "Lo...k at the board, please.", options: ["u", "o", "e", "i"], correctAnswer: "o", explanation: "Dịch: Look: Nhìn." },
+        { id: 68, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["new", "my", "book.", "is", "This"], correctAnswer: "This is my new book.", explanation: "Dịch: Đây là cuốn sách mới của tôi." },
+        { id: 69, type: QuestionType.MC, questionText: "Choose the odd one out:", options: ["young", "out", "big", "short"], correctAnswer: "out", explanation: "Dịch: Out là trạng từ, các từ khác là tính từ miêu tả." },
+        { id: 70, type: QuestionType.FIB, questionText: "I’m fine, thanks. How a_ _ _ t you?", correctAnswer: "about", explanation: "Dịch: Tôi khỏe, cảm ơn. Còn bạn?" },
+        { id: 71, type: QuestionType.MC, questionText: "How do you sp_ll your name?", options: ["e", "o", "u", "a"], correctAnswer: "e", explanation: "Dịch: Spell: Đánh vần." },
+        { id: 72, type: QuestionType.FIB, questionText: "What is _ _ _ _ name? - My name is Tom.", correctAnswer: "your", explanation: "Dịch: Tên bạn là gì?" },
+        { id: 73, type: QuestionType.MC, questionText: "What's your name? - ______ name is Nam.", options: ["My", "His", "Her", "Your"], correctAnswer: "My", explanation: "Dịch: Tên tôi là Nam." },
+        { id: 74, type: QuestionType.FIB, questionText: "Ảnh: _ _ _ CATS", correctAnswer: "TEN", explanation: "Dịch: Mười con mèo." },
+        { id: 75, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/Thi_cac_cap/2020-2021/Lop3/Captruong/Audio/3-tn-24.mp3", questionText: "Good ______, class.", options: ["afternoon", "evening", "morning", "Bye"], correctAnswer: "morning", explanation: "Dịch: Chào buổi sáng cả lớp." },
+        { id: 76, type: QuestionType.MC, questionText: "pencil c__se", options: ["a", "e", "i", "o"], correctAnswer: "a", explanation: "Dịch: Pencil case: Hộp bút." },
+        { id: 77, type: QuestionType.MC, questionText: "How are ...u?", options: ["yu", "ye", "yo", "yi"], correctAnswer: "yo", explanation: "Dịch: Bạn khỏe không?" },
+        { id: 78, type: QuestionType.MC, questionText: "I’m fine, thank ... .", options: ["you", "you’re", "you are", "your"], correctAnswer: "you", explanation: "Dịch: Tôi khỏe, cảm ơn bạn." },
+        { id: 79, type: QuestionType.MC, questionText: "This gift is for you. - ... .", options: ["How are you", "Fine, thanks", "Thank you", "Thank"], correctAnswer: "Thank you", explanation: "Dịch: Món quà này cho bạn. - Cảm ơn bạn." },
+        { id: 80, type: QuestionType.FIB, questionText: "Ảnh: BACKPA_ _", correctAnswer: "CK", explanation: "Dịch: Cái ba lô." },
+        { id: 81, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2018/1/2/636504891883436741_Audio.mp3", questionText: "He plays c_ _ _ _ at break time.", correctAnswer: "chess", explanation: "Dịch: Anh ấy chơi cờ vào giờ giải lao." },
+        { id: 82, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["are", "Their", "brown.", "backpacks"], correctAnswer: "Their backpacks are brown.", explanation: "Dịch: Những cái ba lô của họ màu nâu." },
+        { id: 83, type: QuestionType.FIB, questionText: "Happy birthday _ _ you, Tommy.", correctAnswer: "to", explanation: "Dịch: Chúc mừng sinh nhật bạn." },
+        { id: 84, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["Can", "I", "the door?", "open"], correctAnswer: "Can I open the door?", explanation: "Dịch: Tôi có thể mở cửa không?" },
+        { id: 85, type: QuestionType.FIB, questionText: "This is _ banana.", correctAnswer: "a", explanation: "Dịch: Đây là một quả chuối." },
+        { id: 86, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["in the playground.", "My friends", "and I", "are"], correctAnswer: "My friends and I are in the playground.", explanation: "Dịch: Tôi và các bạn tôi đang ở sân chơi." },
+        { id: 87, type: QuestionType.MC, questionText: "This is ... ruler.", options: ["a", "an", "and", "end"], correctAnswer: "a", explanation: "Dịch: Đây là một cái thước kẻ." },
+        { id: 88, type: QuestionType.FIB, questionText: "Ảnh: AR_ ROOM", correctAnswer: "T", explanation: "Dịch: Phòng mỹ thuật." },
+        { id: 89, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["is", "new and big.", "My", "school"], correctAnswer: "My school is new and big.", explanation: "Dịch: Trường của tôi mới và to." },
+        { id: 90, type: QuestionType.FIB, questionText: "Ảnh: _ UBBER", correctAnswer: "R", explanation: "Dịch: Cục tẩy." },
+        { id: 91, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206305601154447_Audio.mp3", questionText: "There are _ _ _ _ books in the bookcase.", correctAnswer: "five", explanation: "Dịch: Có năm cuốn sách trên giá sách." },
+        { id: 92, type: QuestionType.MC, questionText: "It ... Oxford Primary school.", options: ["is", "a", "are", "an"], correctAnswer: "is", explanation: "Dịch: Đó là trường tiểu học Oxford." },
+        { id: 93, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["is", "Minh.", "my friend.", "This", "He’s"], correctAnswer: "This is Minh. He’s my friend.", explanation: "Dịch: Đây là Minh. Cậu ấy là bạn của tôi." },
+        { id: 94, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["song.", "that", "like", "don't", "I"], correctAnswer: "I don't like that song.", explanation: "Dịch: Tôi không thích bài hát đó." },
+        { id: 95, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206375919993955_Audio.mp3", questionText: "Listen and tick:", options: ["Cats", "Cars", "Buses", "Pets"], correctAnswer: "Pets", explanation: "Dịch: Cả Mary và Tom đều rất yêu thú cưng." },
+        { id: 96, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206393279080445_Audio.mp3", questionText: "My _ _ _ _ _ _ _ _ _ is large.", correctAnswer: "classroom", explanation: "Dịch: Lớp học của tôi rộng." },
+        { id: 97, type: QuestionType.MC, questionText: "… do you spell your name?", options: ["How", "What", "Who", "Why"], correctAnswer: "How", explanation: "Dịch: Bạn đánh vần tên như thế nào?" },
+        { id: 98, type: QuestionType.MC, questionText: "Is this a notebook? …, it is.", options: ["No", "Not", "Yes", "No, it is"], correctAnswer: "Yes", explanation: "Dịch: Đây có phải quyển vở không? - Vâng." },
+        { id: 99, type: QuestionType.FIB, questionText: "Don't talk _ _ class!", correctAnswer: "in", explanation: "Dịch: Đừng nói chuyện trong lớp!" },
+        { id: 100, type: QuestionType.MC, questionText: "… many books are there on the bookshelf?", options: ["Who", "How", "Where", "What"], correctAnswer: "How", explanation: "Dịch: Có bao nhiêu cuốn sách trên giá?" },
+        // ... Cập nhật cho đến câu 200 ...
+        { id: 101, type: QuestionType.MC, questionText: "Choose the odd one out", options: ["Pig", "Dog", "Cat", "Book"], correctAnswer: "Book", explanation: "Dịch: Book là đồ vật, các từ khác là con vật." },
+        { id: 102, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["is", "The", "bookshelf", "over", "there."], correctAnswer: "The bookshelf is over there.", explanation: "Dịch: Giá sách ở đằng kia." },
+        { id: 103, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206309915810025_Audio.mp3", questionText: "Listen and tick:", options: ["pencil", "pen case", "pen", "ball"], correctAnswer: "pen", explanation: "Dịch: Đây là cái bút mực của tôi." },
+        { id: 104, type: QuestionType.FIB, questionText: "A: _ _ _ _ ’s it? - B: It’s my notebook.", correctAnswer: "What", explanation: "Dịch: Đó là cái gì?" },
+        { id: 105, type: QuestionType.MC, questionText: "That's Susan. ___ is eight.", options: ["Her", "She", "Him", "His"], correctAnswer: "She", explanation: "Dịch: Kia là Susan. Cô ấy 8 tuổi." },
+        { id: 106, type: QuestionType.MC, questionText: "… out your book, children.", options: ["Take", "To take", "Takes", "Taking"], correctAnswer: "Take", explanation: "Dịch: Lấy sách ra nào các con." },
+        { id: 107, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["books,", "please.", "Show", "me", "your"], correctAnswer: "Show me your books, please.", explanation: "Dịch: Làm ơn hãy cho tôi xem sách của bạn." },
+        { id: 108, type: QuestionType.FIB, questionText: "That is a br_ _ n book.", correctAnswer: "ow", explanation: "Dịch: Kia là một cuốn sách màu nâu." },
+        { id: 109, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["How many", "your school bag?", "books", "in", "are there"], correctAnswer: "How many books are there in your school bag?", explanation: "Dịch: Có bao nhiêu cuốn sách trong cặp của bạn?" },
+        { id: 110, type: QuestionType.MC, questionText: "Good morning, Peter. - ... .", options: ["Good morning, Jean", "Good night, Jean", "My name’s Jean", "Jean, this is my pen"], correctAnswer: "Good morning, Jean", explanation: "Dịch: Chào buổi sáng Peter. - Chào buổi sáng Jean." },
+        { id: 111, type: QuestionType.MC, questionText: "How ...re you?", options: ["e", "s", "a", "o"], correctAnswer: "a", explanation: "Dịch: are." },
+        { id: 112, type: QuestionType.FIB, questionText: "Linda and her sister like jumping rope in _ _ _ _ _ free time.", correctAnswer: "their", explanation: "Dịch: Linda và chị cô ấy thích nhảy dây lúc rảnh." },
+        { id: 113, type: QuestionType.FIB, questionText: "H_ _ ’s the weather in Hanoi?", correctAnswer: "How", explanation: "Dịch: Thời tiết ở Hà Nội thế nào?" },
+        { id: 114, type: QuestionType.MC, questionText: "Let’s play with … .", options: ["she", "he", "me", "see"], correctAnswer: "me", explanation: "Dịch: Hãy chơi với tớ nào." },
+        { id: 115, type: QuestionType.FIB, questionText: "It’s su_ ny in Hue.", correctAnswer: "sunny", explanation: "Dịch: Ở Huế trời có nắng." },
+        { id: 116, type: QuestionType.MC, questionText: "Bye. ___ you soon.", options: ["See", "Get", "Meet", "Have"], correctAnswer: "See", explanation: "Dịch: Tạm biệt. Hẹn sớm gặp lại." },
+        { id: 117, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["answer,", "children.", "Circle", "the"], correctAnswer: "Circle the answer, children.", explanation: "Dịch: Các con hãy khoanh tròn đáp án." },
+        { id: 118, type: QuestionType.MC, questionText: "Jenny has t...o dolls.", options: ["u", "w", "y", "o"], correctAnswer: "w", explanation: "Dịch: two (hai)." },
+        { id: 119, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["you.", "fine,", "I’m", "thank"], correctAnswer: "I’m fine, thank you.", explanation: "Dịch: Tôi khỏe, cảm ơn bạn." },
+        { id: 120, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["Please", "books.", "close", "your"], correctAnswer: "Please close your books.", explanation: "Dịch: Làm ơn hãy đóng sách lại." },
+        { id: 121, type: QuestionType.MC, questionText: "Ảnh: Look! That flower is ....", options: ["pink", "blue", "green", "black"], correctAnswer: "pink", explanation: "Dịch: Nhìn kìa! Bông hoa kia màu hồng." },
+        { id: 122, type: QuestionType.FIB, questionText: "APP_ E", correctAnswer: "L", explanation: "Dịch: Quả táo." },
+        { id: 123, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["a book. It", "is a", "It isn’t", "notebook."], correctAnswer: "It isn’t a notebook. It is a book.", explanation: "Dịch: Nó không phải quyển vở. Nó là một cuốn sách." },
+        { id: 124, type: QuestionType.MC, questionText: "Odd one out:", options: ["footballer", "singer", "teacher", "cooker"], correctAnswer: "cooker", explanation: "Dịch: Cooker là nồi cơm điện, các từ khác là nghề nghiệp." },
+        { id: 125, type: QuestionType.FIB, questionText: "These are three pencil box_ _ .", correctAnswer: "es", explanation: "Dịch: Đây là 3 cái hộp bút." },
+        { id: 126, type: QuestionType.MC, questionText: "I … a blue pencil and a white ruler.", options: ["has", "have", "don’t have", "doesn’t have"], correctAnswer: "have", explanation: "Dịch: Tôi có một cái bút chì xanh và một cái thước trắng." },
+        { id: 127, type: QuestionType.MC, questionText: "How are you, Sandy? - ... .", options: ["I’m fine, thank", "Fine, thank", "Fine, thanks", "I fine, thank"], correctAnswer: "Fine, thanks", explanation: "Dịch: Tốt, cảm ơn." },
+        { id: 128, type: QuestionType.MC, questionText: "Choose the odd one out:", options: ["black", "stand", "read", "listen"], correctAnswer: "black", explanation: "Dịch: Black là màu sắc, các từ khác là động từ." },
+        { id: 129, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["your", "Open", ", Peter.", "schoolbag"], correctAnswer: "Open your schoolbag, Peter.", explanation: "Dịch: Mở cặp ra nào Peter." },
+        { id: 130, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["They", "are", "dogs.", "small", "cats and"], correctAnswer: "They are small cats and dogs.", explanation: "Dịch: Chúng là những con mèo và chó nhỏ." },
+        { id: 131, type: QuestionType.MC, questionText: "Pick … your pencil.", options: ["at", "up", "on", "for"], correctAnswer: "up", explanation: "Dịch: Cầm bút chì của bạn lên." },
+        { id: 132, type: QuestionType.MC, questionText: "Choose the correct sentence.", options: ["I'm eight years old.", "I'm eight year old.", "He are a student.", "They is my friends."], correctAnswer: "I'm eight years old.", explanation: "Dịch: Tôi tám tuổi." },
+        { id: 133, type: QuestionType.FIB, questionText: "What is _ _ _ name? – He is Tony.", correctAnswer: "his", explanation: "Dịch: Tên anh ấy là gì?" },
+        { id: 134, type: QuestionType.MC, questionText: "This is my ... house.", options: ["a new", "new", "news", "new’s"], correctAnswer: "new", explanation: "Dịch: Đây là ngôi nhà mới của tôi." },
+        { id: 135, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["these", "his pens and", "Are", "pencils?"], correctAnswer: "Are these his pens and pencils?", explanation: "Dịch: Đây có phải bút mực và bút chì của anh ấy không?" },
+        { id: 136, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2018/11/30/636791921674656613_Audio.mp3", questionText: "I’m fine, ________.", options: ["thank", "thank you", "thanks", "thanks you"], correctAnswer: "thanks", explanation: "Dịch: Tôi khỏe, cảm ơn." },
+        { id: 137, type: QuestionType.FIB, questionText: "Bye. See you l_ _ _ r.", correctAnswer: "ate", explanation: "Dịch: Tạm biệt. Hẹn gặp lại sau." },
+        { id: 138, type: QuestionType.FIB, questionText: "Let’s make a ci_ _ le.", correctAnswer: "rc", explanation: "Dịch: Hãy xếp thành một vòng tròn." },
+        { id: 139, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["Yes.", "are my", "new", "They", "books."], correctAnswer: "Yes. They are my new books.", explanation: "Dịch: Vâng. Chúng là những cuốn sách mới của tôi." },
+        { id: 140, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2018/1/2/636504892016093437_Audio.mp3", questionText: "The boy loves ba_ _ _ _ _ on.", correctAnswer: "badminton", explanation: "Dịch: Cậu bé yêu thích môn cầu lông." },
+        { id: 141, type: QuestionType.MC, questionText: "... up, students.", options: ["Sit", "Open", "Stand", "Read"], correctAnswer: "Stand", explanation: "Dịch: Đứng lên nào các em học sinh." },
+        { id: 142, type: QuestionType.MC, questionText: "We sing many songs ... Music lessons.", options: ["to", "during", "so", "and"], correctAnswer: "during", explanation: "Dịch: Chúng tôi hát nhiều bài trong giờ Âm nhạc." },
+        { id: 143, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["See", "you", "tomorrow,", "Peter."], correctAnswer: "See you tomorrow, Peter.", explanation: "Dịch: Hẹn gặp lại vào ngày mai, Peter." },
+        { id: 144, type: QuestionType.FIB, questionText: "These are green hat_ .", correctAnswer: "s", explanation: "Dịch: Đây là những cái mũ xanh." },
+        { id: 145, type: QuestionType.FIB, questionText: "Hello, Mary. How _ _ _ you?", correctAnswer: "are", explanation: "Dịch: Xin chào Mary. Bạn khỏe không?" },
+        { id: 146, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["are", "pencil boxes.", "There", "two"], correctAnswer: "There are two pencil boxes.", explanation: "Dịch: Có hai hộp bút." },
+        { id: 147, type: QuestionType.MC, questionText: "This is ... brother. His name is Richard.", options: ["I", "my", "me", "am"], correctAnswer: "my", explanation: "Dịch: Đây là anh trai tôi." },
+        { id: 148, type: QuestionType.FIB, questionText: "Clo_ _ your book, please.", correctAnswer: "Close", explanation: "Dịch: Hãy đóng sách lại." },
+        { id: 149, type: QuestionType.FIB, questionText: "Ảnh: Does she have bl_ _ _ _ hair?", correctAnswer: "onde", explanation: "Dịch: Cô ấy có mái tóc vàng hoe không?" },
+        { id: 150, type: QuestionType.MC, questionText: "... morning, Simon!", options: ["But", "Good", "Shut", "Hi"], correctAnswer: "Good", explanation: "Dịch: Chào buổi sáng Simon." },
+        { id: 151, type: QuestionType.FIB, questionText: "W_ _ is he? – He is my best friend.", correctAnswer: "ho", explanation: "Dịch: Anh ấy là ai?" },
+        { id: 152, type: QuestionType.MC, questionText: "What colour ... this? - It’s yellow.", options: ["it", "is", "that", "hi"], correctAnswer: "is", explanation: "Dịch: Đây là màu gì? - Màu vàng." },
+        { id: 153, type: QuestionType.FIB, questionText: "Is that Linda? - _ _ , it isn't.", correctAnswer: "No", explanation: "Dịch: Kia là Linda à? - Không phải." },
+        { id: 154, type: QuestionType.FIB, questionText: "Ảnh: _ _ _ _ _", correctAnswer: "green", explanation: "Dịch: Màu xanh lá cây." },
+        { id: 155, type: QuestionType.MC, questionText: "Hello. I … Mary.", options: ["is", "are", "am", "do"], correctAnswer: "am", explanation: "Dịch: Xin chào. Tôi là Mary." },
+        { id: 156, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["your friend.", "say", "to", "’Hello!’", "Let’s"], correctAnswer: "Let’s say ’Hello!’ to your friend.", explanation: "Dịch: Hãy chào bạn của bạn nào." },
+        { id: 157, type: QuestionType.MC, questionText: "Odd one out:", options: ["You", "I", "Hi", "She"], correctAnswer: "Hi", explanation: "Dịch: Hi là lời chào, các từ khác là đại từ nhân xưng." },
+        { id: 158, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["kittens?", "What colour", "are your"], correctAnswer: "What colour are your kittens?", explanation: "Dịch: Những chú mèo con của bạn màu gì?" },
+        { id: 159, type: QuestionType.FIB, questionText: "Thank you very _ _ _ _ for your lovely birthday gift.", correctAnswer: "much", explanation: "Dịch: Cảm ơn bạn rất nhiều." },
+        { id: 160, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206377131960084_Audio.mp3", questionText: "Listen and tick:", options: ["father teacher", "mother teacher", "father doctor", "brother teacher"], correctAnswer: "father doctor", explanation: "Dịch: Bố tôi là một bác sĩ." },
+        { id: 161, type: QuestionType.FIB, questionText: "_ _ quiet, please.", correctAnswer: "Be", explanation: "Dịch: Hãy giữ trật tự." },
+        { id: 162, type: QuestionType.MC, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206300523501528_Audio.mp3", questionText: "She’s ... a kite.", options: ["making", "flying", "playing", "Drawing"], correctAnswer: "flying", explanation: "Dịch: Cô ấy đang thả diều." },
+        { id: 163, type: QuestionType.MC, questionText: "___________ do you do after school?", options: ["What", "Who", "How", "How old"], correctAnswer: "What", explanation: "Dịch: Bạn làm gì sau giờ học?" },
+        { id: 164, type: QuestionType.MC, questionText: "CLO__", options: ["SS", "SA", "SE", "EE"], correctAnswer: "SE", explanation: "Dịch: Close: Đóng." },
+        { id: 165, type: QuestionType.MC, questionText: "This is a blue ... white book.", options: ["and", "an", "a", "am"], correctAnswer: "and", explanation: "Dịch: Đây là cuốn sách màu xanh và trắng." },
+        { id: 166, type: QuestionType.MC, questionText: "It ... a green pencil.", options: ["am", "are", "is", "an"], correctAnswer: "is", explanation: "Dịch: Nó là một cái bút chì xanh." },
+        { id: 167, type: QuestionType.FIB, questionText: "Circle the ans_ er.", correctAnswer: "answer", explanation: "Dịch: Hãy khoanh tròn đáp án." },
+        { id: 168, type: QuestionType.MC, questionText: "Ảnh: Good _____!", options: ["afternoon", "evening", "night", "morning"], correctAnswer: "morning", explanation: "Dịch: Chào buổi sáng." },
+        { id: 169, type: QuestionType.FIB, questionText: "A: _ _ _ ’s it going? - B: Great. Thank you.", correctAnswer: "How", explanation: "Dịch: Mọi chuyện thế nào rồi?" },
+        { id: 170, type: QuestionType.MC, questionText: "... are you? – I’m fine, thanks.", options: ["Hi", "Hello", "How", "How’s"], correctAnswer: "How", explanation: "Dịch: Bạn khỏe không?" },
+        { id: 171, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["the", "words.", "down", "Copy"], correctAnswer: "Copy down the words.", explanation: "Dịch: Chép lại những từ này." },
+        { id: 172, type: QuestionType.FIB, questionText: "Open the b_ _ k.", correctAnswer: "oo", explanation: "Dịch: Mở sách ra." },
+        { id: 173, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["volleyball", "or", "basketball?", "she like", "Does"], correctAnswer: "Does she like volleyball or basketball?", explanation: "Dịch: Cô ấy thích bóng chuyền hay bóng rổ?" },
+        { id: 174, type: QuestionType.MC, questionText: "That is my school gym. ___ new.", options: ["Its", "It's is", "It's", "Its's"], correctAnswer: "It's", explanation: "Dịch: Đó là phòng tập của trường. Nó mới." },
+        { id: 175, type: QuestionType.FIB, audioUrl: "https://res.ioe.vn/edu/EOlympic/ExamData/ImageExam/2013/11/21/635206393465500772_Audio.mp3", questionText: "My school _ _ _ is very long.", correctAnswer: "bus", explanation: "Dịch: Xe buýt trường tôi rất dài." },
+        { id: 176, type: QuestionType.FIB, questionText: "W_ _ _ _ on the board, please.", correctAnswer: "rite", explanation: "Dịch: Hãy viết lên bảng." },
+        { id: 177, type: QuestionType.FIB, questionText: "Look _ _ the blackboard, please.", correctAnswer: "at", explanation: "Dịch: Hãy nhìn lên bảng đen." },
+        { id: 178, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["big?", "your", "Is", "new", "school"], correctAnswer: "Is your new school big?", explanation: "Dịch: Trường mới của bạn có to không?" },
+        { id: 179, type: QuestionType.FIB, questionText: "Ảnh: _ AG", correctAnswer: "BAG", explanation: "Dịch: Cái túi/cặp." },
+        { id: 180, type: QuestionType.FIB, questionText: "_ _ _ _ is the date today, Sam?", correctAnswer: "What", explanation: "Dịch: Hôm nay là ngày mấy, Sam?" },
+        { id: 181, type: QuestionType.FIB, questionText: "_ _ _ ’t play football in the classroom.", correctAnswer: "Don", explanation: "Dịch: Đừng chơi bóng đá trong lớp học." },
+        { id: 182, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["name", "Her", "Lisa.", "is"], correctAnswer: "Her name is Lisa.", explanation: "Dịch: Tên cô ấy là Lisa." },
+        { id: 183, type: QuestionType.MC, questionText: "They ____ a song in the classroom.", options: ["point", "read", "look", "sing"], correctAnswer: "sing", explanation: "Dịch: Họ hát một bài hát trong lớp học." },
+        { id: 184, type: QuestionType.FIB, questionText: "Ảnh: This is a _ _ _ _ .", correctAnswer: "kite", explanation: "Dịch: Đây là một con diều." },
+        { id: 185, type: QuestionType.FIB, questionText: "Ảnh: Is that a black _ _ _ _ ?", correctAnswer: "book", explanation: "Dịch: Đó có phải cuốn sách đen không?" },
+        { id: 186, type: QuestionType.FIB, questionText: "I’m fine, thanks. _ _ d you?", correctAnswer: "An", explanation: "Dịch: Tôi khỏe, cảm ơn. Còn bạn?" },
+        { id: 187, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["with", "play", "me.", "Let’s"], correctAnswer: "Let’s play with me.", explanation: "Dịch: Hãy chơi với tớ nào." },
+        { id: 188, type: QuestionType.MC, questionText: "Choose the odd one out", options: ["dog", "cat", "friend", "chicken"], correctAnswer: "friend", explanation: "Dịch: Friend là bạn bè, các từ khác là con vật." },
+        { id: 189, type: QuestionType.FIB, questionText: "Stand _ _ , please.", correctAnswer: "up", explanation: "Dịch: Đứng lên nào." },
+        { id: 190, type: QuestionType.FIB, questionText: "Don't ma_ _ noise in class.", correctAnswer: "ke", explanation: "Dịch: Đừng làm ồn trong lớp." },
+        { id: 191, type: QuestionType.FIB, questionText: "Ảnh: A _ ONG NECK", correctAnswer: "L", explanation: "Dịch: Một cái cổ dài." },
+        { id: 192, type: QuestionType.FIB, questionText: "Is this yo_ _ book? - Yes, it is.", correctAnswer: "ur", explanation: "Dịch: Đây có phải sách của bạn không?" },
+        { id: 193, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["are", "kites", "beautiful.", "These"], correctAnswer: "These kites are beautiful.", explanation: "Dịch: Những con diều này thật đẹp." },
+        { id: 194, type: QuestionType.FIB, questionText: "Can you he_ p me?", correctAnswer: "l", explanation: "Dịch: Bạn có thể giúp tôi không?" },
+        { id: 195, type: QuestionType.FIB, questionText: "We _ _ _ pupils.", correctAnswer: "are", explanation: "Dịch: Chúng tôi là học sinh." },
+        { id: 196, type: QuestionType.FIB, questionText: "Ảnh: My school l_ _ _ ary is big.", correctAnswer: "ibr", explanation: "Dịch: Thư viện trường tôi rất to." },
+        { id: 197, type: QuestionType.MC, questionText: "Open ... books, please.", options: ["am", "I", "you", "your"], correctAnswer: "your", explanation: "Dịch: Hãy mở sách của các em ra." },
+        { id: 198, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["Jane", "and Tim.", "are", "These"], correctAnswer: "These are Jane and Tim.", explanation: "Dịch: Đây là Jane và Tim." },
+        { id: 199, type: QuestionType.RE, questionText: "Sắp xếp câu:", rearrangeParts: ["name?", "What's", "its"], correctAnswer: "What's its name?", explanation: "Dịch: Tên nó là gì?" },
+        { id: 200, type: QuestionType.MC, questionText: "Can you ride a bicycle? - ... .", options: ["No, I can", "No, thanks", "Yes, I can", "Yes, I can’t"], correctAnswer: "Yes, I can", explanation: "Dịch: Bạn biết đi xe đạp không? - Vâng, tôi biết." }
+      ];
+
+      const Button = ({ children, variant = 'primary', className = '', ...props }) => {
+        const variants = {
+          primary: "bg-blue-600 text-white shadow-md active:bg-blue-700",
+          secondary: "bg-emerald-500 text-white shadow-md active:bg-emerald-600",
+          danger: "bg-rose-500 text-white shadow-md active:bg-rose-600",
+          outline: "bg-white border-2 border-slate-200 text-slate-600 active:bg-slate-50"
+        };
+        return <button className={`px-5 py-3 rounded-2xl font-black transition-all active:scale-95 disabled:opacity-30 ${variants[variant]} ${className}`} {...props}>{children}</button>;
+      };
+
+      const AudioPlayer = ({ src }) => {
+        const audioRef = useRef(null);
+        const [isPlaying, setIsPlaying] = useState(false);
+        const toggle = () => {
+          if (audioRef.current.paused) { audioRef.current.play(); setIsPlaying(true); }
+          else { audioRef.current.pause(); setIsPlaying(false); }
+        };
+        return (
+          <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200 w-fit mb-4">
+            <button onClick={toggle} className="w-12 h-12 flex items-center justify-center bg-blue-600 text-white rounded-xl shadow-lg">
+              <span className="text-xl">{isPlaying ? '❚❚' : '▶'}</span>
+            </button>
+            <div className="flex flex-col pr-1 leading-none">
+              <span className="text-lg font-black text-slate-800 uppercase">LISTEN</span>
+              <span className="text-[10px] font-bold text-slate-400">Speaker On</span>
+            </div>
+            <audio ref={audioRef} src={src} onEnded={() => setIsPlaying(false)} className="hidden" />
+          </div>
+        );
+      };
+
+      const QuestionCard = ({ question, onAnswer, isAnswered, userAnswer }) => {
+        const [inputVal, setInputVal] = useState('');
+        const [selectedParts, setSelectedParts] = useState([]);
+        const [showHint, setShowHint] = useState(false);
+        
+        const normalize = (s) => s ? s.replace(/[.,!?;:'"()]/g, '').replace(/\s+/g, ' ').trim().toLowerCase() : "";
+        const isCorrect = userAnswer && normalize(userAnswer) === normalize(question.correctAnswer);
+
+        useEffect(() => { setInputVal(''); setSelectedParts([]); setShowHint(false); }, [question.id]);
+
+        const handleKeyDown = (e) => {
+          if (e.key === 'Enter' && !isAnswered) {
+            if (question.type === QuestionType.FIB && inputVal.trim()) onAnswer(inputVal.trim());
+            else if (question.type === QuestionType.RE && selectedParts.length > 0) onAnswer(selectedParts.join(' '));
+          }
+        };
+
+        const getHint = () => {
+          const firstChar = question.correctAnswer.charAt(0).toUpperCase();
+          const vnMeaning = question.explanation.match(/Dịch:\s*([^.]*)/)?.[1] || "";
+          return { firstChar, vnMeaning };
+        };
+
+        return (
+          <div className="w-full max-w-2xl mx-auto animate-fade-in">
+            <div className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-slate-200 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-xl text-xs font-black uppercase tracking-widest">{question.type}</span>
+                {!isAnswered && (
+                  <button onClick={() => setShowHint(!showHint)} className="text-xs font-black bg-amber-50 text-amber-700 px-3 py-1 rounded-lg border border-amber-100">💡 {showHint ? 'ẨN GỢI Ý' : 'XEM GỢI Ý'}</button>
+                )}
+              </div>
+
+              {question.audioUrl && <AudioPlayer src={question.audioUrl} />}
+              
+              {showHint && !isAnswered && (
+                <div className="mb-4 bg-amber-50 p-4 rounded-2xl border border-amber-100 text-amber-900 animate-slide-up">
+                  <p className="font-bold text-lg">🔤 Ký tự đầu: <span className="font-black text-xl">"{getHint().firstChar}"</span></p>
+                  {getHint().vnMeaning && <p className="font-bold text-lg mt-1">🇻🇳 Nghĩa: <span className="italic">{getHint().vnMeaning}</span></p>}
+                </div>
+              )}
+
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-800 mb-8 leading-tight text-center sm:text-left">{question.questionText}</h2>
+
+              {question.type === QuestionType.MC && (
+                <div className="grid grid-cols-1 gap-3">
+                  {question.options.map((opt, idx) => {
+                    let style = "bg-white border-slate-100 hover:border-blue-500";
+                    if (isAnswered) {
+                      if (normalize(opt) === normalize(question.correctAnswer)) style = "bg-emerald-50 border-emerald-500 text-emerald-900 ring-4 ring-emerald-100";
+                      else if (normalize(opt) === normalize(userAnswer)) style = "bg-rose-50 border-rose-500 text-rose-900 ring-4 ring-rose-100";
+                      else style = "bg-slate-50 opacity-40";
+                    }
+                    return (
+                      <button key={idx} onClick={() => !isAnswered && onAnswer(opt)} disabled={isAnswered} className={`w-full p-4 rounded-2xl text-left border-2 transition-all flex items-center gap-4 ${style}`}>
+                        <span className={`font-black w-10 h-10 rounded-xl flex items-center justify-center text-xl ${isAnswered && normalize(opt) === normalize(question.correctAnswer) ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{String.fromCharCode(65+idx)}</span>
+                        <span className="flex-1 font-black text-xl">{opt}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {question.type === QuestionType.FIB && (
+                <div className="space-y-4">
+                  <input type="text" autoFocus value={isAnswered ? userAnswer : inputVal} onChange={(e) => setInputVal(e.target.value)} onKeyDown={handleKeyDown} disabled={isAnswered} placeholder="NHẬP TỪ CÒN THIẾU..." className={`w-full p-5 rounded-3xl border-4 text-4xl font-black text-center outline-none ${isAnswered ? (isCorrect ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50') : 'border-slate-100 bg-slate-50 focus:border-blue-500'}`} />
+                  {!isAnswered && <Button onClick={() => inputVal.trim() && onAnswer(inputVal.trim())} className="w-full text-xl py-5 !rounded-3xl shadow-xl">XÁC NHẬN (ENTER)</Button>}
+                </div>
+              )}
+
+              {question.type === QuestionType.RE && (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 justify-center min-h-[80px]">
+                    {question.rearrangeParts.map((p, idx) => (
+                      <button key={idx} onClick={() => !isAnswered && (selectedParts.includes(p) ? setSelectedParts(selectedParts.filter(x => x!==p)) : setSelectedParts([...selectedParts, p]))} disabled={isAnswered || selectedParts.includes(p)} className={`px-4 py-2 rounded-xl bg-white border-2 font-black text-lg shadow-sm active:scale-90 ${selectedParts.includes(p) ? 'opacity-20 border-dashed' : 'hover:border-blue-500'}`}>{p}</button>
+                    ))}
+                  </div>
+                  <div className={`min-h-[100px] p-4 rounded-3xl border-4 border-dashed flex flex-wrap gap-2 justify-center items-center ${isAnswered ? (isCorrect ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50') : 'border-slate-200'}`}>
+                    {selectedParts.length === 0 && !isAnswered && <span className="text-slate-300 font-black italic">Bấm chọn các từ bên trên...</span>}
+                    {selectedParts.map((p, idx) => (
+                      <button key={idx} onClick={() => !isAnswered && setSelectedParts(selectedParts.filter(x => x!==p))} disabled={isAnswered} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-lg shadow-lg ring-4 ring-blue-50">{p}</button>
+                    ))}
+                  </div>
+                  {!isAnswered && (
+                    <div className="flex gap-2">
+                      <Button onClick={() => setSelectedParts([])} variant="outline" className="px-8 text-lg">XÓA</Button>
+                      <Button onClick={() => selectedParts.length > 0 && onAnswer(selectedParts.join(' '))} className="flex-1 text-xl shadow-xl">XÁC NHẬN (ENTER)</Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isAnswered && (
+                <div className={`mt-6 p-5 rounded-3xl border-l-[12px] shadow-xl animate-fade-in ${isCorrect ? 'bg-emerald-50 border-emerald-500' : 'bg-rose-50 border-rose-500'}`}>
+                  <div className="flex gap-4 items-start">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-white text-3xl font-black shadow-lg ${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`}>{isCorrect ? '✓' : '✕'}</div>
+                    <div>
+                      <h3 className={`font-black text-2xl mb-1 ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}`}>{isCorrect ? 'XUẤT SẮC!' : 'SAI RỒI!'}</h3>
+                      {!isCorrect && <div className="mb-2 p-2 bg-white/80 rounded-xl"><p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">ĐÁP ÁN ĐÚNG:</p><p className="font-black text-slate-900 text-xl">{question.correctAnswer}</p></div>}
+                      <p className="text-base font-bold text-slate-600 leading-snug"><span className="font-black text-blue-600 uppercase text-xs mr-2">GIẢI THÍCH:</span>{question.explanation}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const ResultScreen = ({ userName, userAnswers, onRetryAll, onRetryWrong }) => {
+        const correct = userAnswers.filter(a => a.isCorrect).length;
+        const total = 200;
+        const attempted = userAnswers.length;
+        const percent = Math.round((correct / attempted) * 100) || 0;
+        const wrongList = userAnswers.filter(a => !a.isCorrect);
+
+        return (
+          <div className="min-h-screen bg-slate-100 p-4 py-10 flex flex-col items-center overflow-y-auto custom-scrollbar">
+            <div className="bg-white rounded-[3rem] shadow-2xl p-10 max-w-2xl w-full text-center border-4 border-white mb-8 animate-fade-in">
+              <div className="text-7xl font-black text-blue-600 mb-2">{percent}%</div>
+              <h2 className="text-3xl font-black text-slate-800 mb-8 uppercase">HOÀN THÀNH BÀI ÔN!</h2>
+              <div className="grid grid-cols-2 gap-4 mb-10">
+                <div className="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-100"><div className="text-5xl font-black text-emerald-600">{correct}</div><div className="text-xs font-black text-emerald-700 tracking-widest uppercase">Câu đúng</div></div>
+                <div className="bg-rose-50 p-6 rounded-3xl border-2 border-rose-100"><div className="text-5xl font-black text-rose-500">{attempted - correct}</div><div className="text-xs font-black text-rose-700 tracking-widest uppercase">Câu sai</div></div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={onRetryAll} className="flex-1 text-2xl py-5 !rounded-3xl">LÀM LẠI TẤT CẢ</Button>
+                {wrongList.length > 0 && <Button onClick={onRetryWrong} variant="danger" className="flex-1 text-2xl py-5 !rounded-3xl">ÔN LẠI CÂU SAI</Button>}
+              </div>
+            </div>
+
+            {wrongList.length > 0 && (
+              <div className="w-full max-w-2xl animate-slide-up">
+                <h3 className="text-xl font-black text-slate-700 mb-4 px-4 uppercase tracking-tight flex items-center gap-2"><span className="text-rose-500">❌</span> XEM LẠI CÁC CÂU SAI:</h3>
+                <div className="space-y-4">
+                  {wrongList.map((ans, i) => {
+                    const q = QUIZ_DATA.find(x => x.id === ans.questionId);
+                    return (
+                      <div key={i} className="bg-white p-6 rounded-[2rem] border-2 border-rose-100 shadow-lg">
+                        <div className="mb-2"><span className="text-xs font-black bg-rose-100 text-rose-700 px-3 py-1 rounded-lg uppercase">Câu #{q.id}</span></div>
+                        <p className="text-xl font-black text-slate-800 mb-4">{q.questionText}</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                          <div className="p-3 bg-rose-50/50 rounded-2xl border border-rose-100"><p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">BẠN CHỌN:</p><p className="text-lg font-black text-rose-900">{ans.userResponse || "(Bỏ trống)"}</p></div>
+                          <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100"><p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">ĐÁP ÁN ĐÚNG:</p><p className="text-lg font-black text-emerald-900">{q.correctAnswer}</p></div>
+                        </div>
+                        <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                          <p className="text-sm font-bold text-slate-700 leading-relaxed"><span className="text-blue-600 font-black uppercase text-xs mr-2">GIẢI THÍCH:</span>{q.explanation}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const App = () => {
+        const [gameState, setGameState] = useState(GameState.START);
+        const [userName, setUserName] = useState('');
+        const [activeQuestions, setActiveQuestions] = useState(QUIZ_DATA);
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [userAnswers, setUserAnswers] = useState([]);
+        const [showGrid, setShowGrid] = useState(false);
+
+        const handleAnswer = (response) => {
+          const q = activeQuestions[currentIndex];
+          const isCorrect = response.toLowerCase().replace(/[.,!?]/g, '').trim() === q.correctAnswer.toLowerCase().replace(/[.,!?]/g, '').trim();
+          setUserAnswers(prev => [...prev.filter(a => a.questionId !== q.id), { questionId: q.id, userResponse: response, isCorrect }]);
+        };
+
+        if (gameState === GameState.START) return (
+          <div className="min-h-screen flex items-center justify-center bg-blue-600 p-4">
+            <div className="bg-white rounded-[3rem] shadow-2xl p-10 max-w-md w-full text-center animate-slide-up">
+              <h1 className="text-5xl font-black text-slate-800 mb-3 tracking-tighter">IOE K3</h1>
+              <p className="text-slate-400 font-black mb-8 uppercase tracking-[0.2em] text-xs">Bộ đề 11 (200 câu)</p>
+              <form onSubmit={(e) => { e.preventDefault(); userName.trim() && setGameState(GameState.PLAYING); }} className="space-y-5">
+                <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="TÊN CỦA BẠN" required className="w-full px-6 py-5 rounded-3xl border-4 border-slate-100 text-3xl font-black text-center outline-none focus:border-blue-500 uppercase" />
+                <Button type="submit" className="w-full text-2xl py-5 !rounded-3xl shadow-blue-500/40">BẮT ĐẦU CHƠI</Button>
+              </form>
+            </div>
+          </div>
+        );
+
+        if (gameState === GameState.FINISHED) return <ResultScreen userName={userName} userAnswers={userAnswers} onRetryAll={() => { setActiveQuestions(QUIZ_DATA); setCurrentIndex(0); setUserAnswers([]); setGameState(GameState.PLAYING); }} onRetryWrong={() => { const wrongIds = userAnswers.filter(a => !a.isCorrect).map(a => a.questionId); setActiveQuestions(QUIZ_DATA.filter(q => wrongIds.includes(q.id))); setCurrentIndex(0); setUserAnswers([]); setGameState(GameState.PLAYING); }} />;
+
+        const currentQ = activeQuestions[currentIndex];
+        const ans = userAnswers.find(a => a.questionId === currentQ.id);
+
+        return (
+          <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 pb-32">
+            <div className="w-full max-w-2xl flex justify-between items-center bg-white p-4 rounded-3xl shadow-sm border mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black">👤</div>
+                <p className="text-lg font-black text-slate-800 uppercase">{userName}</p>
+              </div>
+              <div className="flex gap-4 items-center">
+                <div className="text-center"><p className="text-[10px] font-black text-slate-400 uppercase">Câu hỏi</p><p className="text-2xl font-black text-blue-600">{currentIndex + 1}/{activeQuestions.length}</p></div>
+              </div>
+              <button onClick={() => setShowGrid(true)} className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-black hover:bg-slate-200">📋 DANH SÁCH</button>
+            </div>
+            
+            <QuestionCard question={currentQ} onAnswer={handleAnswer} isAnswered={!!ans} userAnswer={ans?.userResponse} />
+
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t flex justify-center z-50">
+              <div className="w-full max-w-2xl flex gap-3">
+                <Button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} variant="outline" disabled={currentIndex === 0} className="!px-6">←</Button>
+                {ans ? (
+                  <Button onClick={() => currentIndex === activeQuestions.length - 1 ? setGameState(GameState.FINISHED) : setCurrentIndex(currentIndex+1)} className="flex-1 text-xl animate-bounce-short">{currentIndex === activeQuestions.length - 1 ? 'NỘP BÀI ✔' : 'CÂU TIẾP THEO →'}</Button>
+                ) : (
+                  <div className="flex-1 flex gap-2">
+                    <Button onClick={() => setCurrentIndex(Math.min(activeQuestions.length-1, currentIndex+1))} variant="outline" className="flex-1 text-slate-400">BỎ QUA</Button>
+                    <Button onClick={() => window.confirm("Nộp bài ngay?") && setGameState(GameState.FINISHED)} variant="danger" className="flex-1">KẾT THÚC</Button>
+                  </div>
+                )}
+                <Button onClick={() => setCurrentIndex(Math.min(activeQuestions.length-1, currentIndex+1))} variant="outline" disabled={currentIndex === activeQuestions.length-1 || !!ans} className="!px-6">→</Button>
+              </div>
+            </div>
+
+            {showGrid && (
+              <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[80vh] flex flex-col p-6 animate-slide-up">
+                  <div className="flex justify-between mb-4"><h2 className="text-xl font-black uppercase">DANH SÁCH CÂU HỎI</h2><button onClick={() => setShowGrid(false)} className="font-black text-xl">✕</button></div>
+                  <div className="flex-1 overflow-y-auto grid grid-cols-5 sm:grid-cols-10 gap-2 custom-scrollbar">
+                    {activeQuestions.map((q, idx) => {
+                      const a = userAnswers.find(x => x.questionId === q.id);
+                      let color = "bg-slate-100 text-slate-400";
+                      if (idx === currentIndex) color = "ring-4 ring-blue-500 bg-white text-blue-600";
+                      else if (a) color = a.isCorrect ? "bg-emerald-500 text-white" : "bg-rose-500 text-white";
+                      return <button key={q.id} onClick={() => { setCurrentIndex(idx); setShowGrid(false); }} className={`h-10 rounded-lg font-black text-sm transition-all ${color}`}>{q.id}</button>;
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
